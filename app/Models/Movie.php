@@ -13,5 +13,10 @@ class Movie extends Model
         'show_time',
         'duration',
         'release_date',
+        'image',
+        'direction',
+        'script',
+        'production_year',
+        'cast',
     ];
 }
