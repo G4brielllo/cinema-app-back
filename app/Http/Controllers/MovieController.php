@@ -9,11 +9,18 @@ use Illuminate\Support\Facades\Auth;
 
 class MovieController extends Controller
 {
+    // public function index()
+    // {
+    //     $movies = Movie::all();
+    //     return response()->json($movies);
+    // }
+
     public function index()
     {
-        $movies = Movie::all();
+        $movies = Movie::with('screenings')->get();
         return response()->json($movies);
     }
+
     public function store()
     {
         $user = Auth::user();

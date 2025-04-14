@@ -19,4 +19,9 @@ class Movie extends Model
         'production_year',
         'cast',
     ];
+    public function screenings()
+    {
+        return $this->hasMany(Screening::class);
+    }
+
 }

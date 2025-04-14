@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MovieController;
+use App\Http\Controllers\ScreeningController;
 
 Route::post('/api/register', [AuthController::class, 'register']);
 
@@ -20,6 +21,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/api/movies', [MovieController::class, 'index']);
     Route::post('/api/movies', [MovieController::class, 'store']);
     Route::delete('/api/movies/{id}', [MovieController::class, 'delete']);
+
+    Route::get('/api/screenings', [ScreeningController::class, 'index']);
+    Route::post('/api/screenings', [ScreeningController::class, 'store']);
+    Route::delete('/api/screenings/{id}', [ScreeningController::class, 'delete']);
 });
 
 
