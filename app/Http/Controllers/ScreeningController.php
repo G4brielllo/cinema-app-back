@@ -19,6 +19,11 @@ class ScreeningController extends Controller
         $screenings = Screening::with('movie')->get();
         return response()->json($screenings);
     }
+    public function show(){
+        $id = request()->route('id');
+        $screening = Screening::with('movie')->findOrFail($id);
+        return response()->json($screening);
+    }
 
     public function store()
     {
@@ -32,8 +37,10 @@ class ScreeningController extends Controller
             'movie_id' => 'required|integer',
             'screening_date' => 'required|date',
             'screening_time' => 'required|date_format:H:i',
+            'hall_id' => 'required|integer|nullable',
         ]);
 
+        $data['hall_id'] = $data['hall_id'] ?? 1;
         $screening = Screening::create($data);
         return response()->json($screening, 201);
     }

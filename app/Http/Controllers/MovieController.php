@@ -20,7 +20,12 @@ class MovieController extends Controller
         $movies = Movie::with('screenings')->get();
         return response()->json($movies);
     }
-
+    public function show()
+    {
+        $id = request()->route('id');
+        $movie = Movie::with('screenings')->findOrFail($id);
+        return response()->json($movie);
+    }
     public function store()
     {
         $user = Auth::user();
