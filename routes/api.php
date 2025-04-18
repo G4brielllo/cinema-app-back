@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MovieController;
 use App\Http\Controllers\ScreeningController;
+use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\HallController;
 
 Route::post('/api/register', [AuthController::class, 'register']);
@@ -28,6 +29,8 @@ Route::get('/api/screenings/{id}', [ScreeningController::class, 'show']);
 Route::post('/api/screenings', [ScreeningController::class, 'store'])->middleware('auth:sanctum');
 Route::delete('/api/screenings/{id}', [ScreeningController::class, 'delete'])->middleware('auth:sanctum');
 
+Route::post('/api/reservations', [ReservationController::class, 'store'])->middleware('auth:sanctum');
+Route::get('/api/reservations', [ReservationController::class, 'index'])->middleware('auth:sanctum');
 
 
 Route::get('/api/halls', [HallController::class, 'index']);
