@@ -9,6 +9,10 @@ use App\Models\Screening;
 use App\Models\Hall;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+// use App\Mail\ReservationConfirmation;
+// use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+
 
 
 class ReservationController extends Controller
@@ -31,8 +35,8 @@ class ReservationController extends Controller
         ]);
 
         $userId = Auth::id();
-        $reservationCode = strtoupper(str_random(8));
-        $scraeningId = $request->input('screening_id');
+        $reservationCode = strtoupper(Str::random(8));
+        $screeningId = $request->input('screening_id');
         $selectedSeats = $request->input('seats');
 
         $reservedSeatIds = [];
@@ -40,12 +44,12 @@ class ReservationController extends Controller
             $seat = Seat::where('screening_id', $screeningId)
                 ->where('row', $seatInfo['row'])
                 ->where('number', $seatInfo['number'])
-                ->where('reserved', false)
+                ->where('is_booked', false)
                 ->first();
             if (!$seat) {
                 return response()->json(['message' => 'Wybrane miejsce jest niedostępne'], 400);
             }
-            $seat->reserved = true;
+            $seat->is_booked = true;
             $seat->save();
 
             $reservation = Reservation::create([
@@ -58,6 +62,10 @@ class ReservationController extends Controller
             ]);
             $reservedSeatIds[] = $seat->id;
         }
+        $user = Auth::user();
+
+        // Mail::to($user->email)->send(new ReservationConfirmation($reservationCode));
+
         return response()->json([
             'message' => 'Rezerwacja została pomyślnie zrealizowana',
             'reservation_code' => $reservationCode,

@@ -6,6 +6,8 @@ use App\Http\Controllers\MovieController;
 use App\Http\Controllers\ScreeningController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\HallController;
+use App\Http\Controllers\SeatController;
+
 
 Route::post('/api/register', [AuthController::class, 'register']);
 
@@ -35,3 +37,6 @@ Route::get('/api/reservations', [ReservationController::class, 'index'])->middle
 
 Route::get('/api/halls', [HallController::class, 'index']);
 Route::get('/api/halls/{id}', [HallController::class, 'show']);
+
+// Route::get('/screenings/{screeningId}/seats', [SeatController::class, 'getSeatsForScreening']);
+Route::get('/api/screenings/{screening}/seats', [SeatController::class, 'getSeatsForScreening']);

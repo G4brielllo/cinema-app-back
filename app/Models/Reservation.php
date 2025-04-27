@@ -9,8 +9,10 @@ class Reservation extends Model
     protected $fillable = [
         'user_id',
         'screening_id',
-        'seats',
+        'seat_id',
         'reservation_code',
+        'status',
+        'reservation_time',
     ];
 
     public function screening()
