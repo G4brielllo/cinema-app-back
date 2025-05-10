@@ -9,8 +9,8 @@ use App\Models\Screening;
 use App\Models\Hall;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-// use App\Mail\ReservationConfirmation;
-// use Illuminate\Support\Facades\Mail;
+use App\Mail\ReservationConfirmation;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 
@@ -64,7 +64,7 @@ class ReservationController extends Controller
         }
         $user = Auth::user();
 
-        // Mail::to($user->email)->send(new ReservationConfirmation($reservationCode));
+        Mail::to($user->email)->send(new ReservationConfirmation($reservationCode));
 
         return response()->json([
             'message' => 'Rezerwacja została pomyślnie zrealizowana',

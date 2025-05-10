@@ -7,6 +7,7 @@ use App\Http\Controllers\ScreeningController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\HallController;
 use App\Http\Controllers\SeatController;
+use App\Http\Controllers\UserController;
 
 
 Route::post('/api/register', [AuthController::class, 'register']);
@@ -21,14 +22,20 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/api/users', [UserController::class, 'index'])->middleware('auth:sanctum');
+Route::delete('/api/users/{id}', [UserController::class, 'delete'])->middleware('auth:sanctum');
+
+
 Route::get('/api/movies', [MovieController::class, 'index']);
 Route::get('/api/movies/{id}', [MovieController::class, 'show']);
 Route::post('/api/movies', [MovieController::class, 'store'])->middleware('auth:sanctum');
+Route::put('/api/movies/{id}', [MovieController::class, 'update'])->middleware('auth:sanctum');
 Route::delete('/api/movies/{id}', [MovieController::class, 'delete'])->middleware('auth:sanctum');
 
 Route::get('/api/screenings', [ScreeningController::class, 'index']);
 Route::get('/api/screenings/{id}', [ScreeningController::class, 'show']);
 Route::post('/api/screenings', [ScreeningController::class, 'store'])->middleware('auth:sanctum');
+Route::put('/api/screenings/{id}', [ScreeningController::class, 'update'])->middleware('auth:sanctum');
 Route::delete('/api/screenings/{id}', [ScreeningController::class, 'delete'])->middleware('auth:sanctum');
 
 Route::post('/api/reservations', [ReservationController::class, 'store'])->middleware('auth:sanctum');

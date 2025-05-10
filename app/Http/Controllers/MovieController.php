@@ -57,4 +57,30 @@ class MovieController extends Controller
         $movie->delete();
         return response()->json(['message' => 'Movie deleted successfully']);
     }
+    public function update($id)
+    {
+        $user = Auth::user();
+
+        if (!$user || $user->role !== 'admin') {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+
+        $data = request()->validate([
+            'title' => 'string',
+            'description' => 'string',
+            'category' => 'string',
+            'show_time' => 'date',
+            'duration' => 'integer',
+            'release_date' => 'date',
+            'image' => 'string',
+            'direction' => 'string',
+            'script' => 'string',
+            'production_year' => 'integer',
+            'cast' => 'string',
+        ]);
+
+        $movie = Movie::findOrFail($id);
+        $movie->update($data);
+        return response()->json($movie);
+    }
 }

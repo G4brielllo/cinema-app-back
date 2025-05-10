@@ -89,4 +89,23 @@ class ScreeningController extends Controller
         $screening->delete();
         return response()->json(['message' => 'Screening deleted successfully']);
     }
+    public function update($id)
+    {
+        $user = Auth::user();
+
+        if (!$user || $user->role !== 'admin') {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+
+        $data = request()->validate([
+            'movie_id' => 'integer',
+            'screening_date' => 'date',
+            'screening_time' => 'date_format:H:i',
+            'hall_id' => 'integer|nullable',
+        ]);
+
+        $screening = Screening::findOrFail($id);
+        $screening->update($data);
+        return response()->json($screening);
+    }
 }
