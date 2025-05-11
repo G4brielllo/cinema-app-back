@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('halls', function (Blueprint $table) {
-            $table->integer('rows')->after('name');
-            $table->integer('seats_per_row')->after('rows');
+            // $table->integer('rows')->after('name');
+            // $table->integer('seats_per_row')->after('rows');
         });
     }
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\HallController;
 use App\Http\Controllers\SeatController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PasswordResetController;
 
 
 Route::post('/api/register', [AuthController::class, 'register']);
@@ -47,3 +48,8 @@ Route::get('/api/halls/{id}', [HallController::class, 'show']);
 
 // Route::get('/screenings/{screeningId}/seats', [SeatController::class, 'getSeatsForScreening']);
 Route::get('/api/screenings/{screening}/seats', [SeatController::class, 'getSeatsForScreening']);
+
+Route::post('/api/forgot-password', [PasswordResetController::class, 'sendResetLink']);
+Route::post('/api/reset-password', [PasswordResetController::class, 'reset']);
+Route::get('/password/reset/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+
