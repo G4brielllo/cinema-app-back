@@ -72,5 +72,14 @@ class ReservationController extends Controller
             'reserved_seats' => $reservedSeatIds,
         ]);
     }
+    public function showByCode($code)
+    {
+        $reservation = Reservation::with(['user', 'screening.movie'])->where('reservation_code', $code)->first();
 
+        if (!$reservation) {
+            return response()->json(['error' => 'Reservation not found'], 404);
+        }
+
+        return response()->json($reservation);
+    }
 }

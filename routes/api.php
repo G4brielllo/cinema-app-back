@@ -41,6 +41,7 @@ Route::delete('/api/screenings/{id}', [ScreeningController::class, 'delete'])->m
 
 Route::post('/api/reservations', [ReservationController::class, 'store'])->middleware('auth:sanctum');
 Route::get('/api/reservations', [ReservationController::class, 'index'])->middleware('auth:sanctum');
+Route::get('/api/reservations/{code}', [ReservationController::class, 'showByCode']);
 
 
 Route::get('/api/halls', [HallController::class, 'index']);
@@ -52,4 +53,6 @@ Route::get('/api/screenings/{screening}/seats', [SeatController::class, 'getSeat
 Route::post('/api/forgot-password', [PasswordResetController::class, 'sendResetLink']);
 Route::post('/api/reset-password', [PasswordResetController::class, 'reset']);
 Route::get('/password/reset/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+
+
 
