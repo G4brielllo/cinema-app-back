@@ -18,6 +18,9 @@ class Movie extends Model
         'script',
         'production_year',
         'cast',
+        'format',
+        'audio_type',
+        'announcement',
     ];
     public function screenings()
     {

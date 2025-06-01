@@ -9,6 +9,8 @@ use App\Http\Controllers\HallController;
 use App\Http\Controllers\SeatController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\PayUController;
+
 
 
 Route::post('/api/register', [AuthController::class, 'register']);
@@ -41,7 +43,11 @@ Route::delete('/api/screenings/{id}', [ScreeningController::class, 'delete'])->m
 
 Route::post('/api/reservations', [ReservationController::class, 'store'])->middleware('auth:sanctum');
 Route::get('/api/reservations', [ReservationController::class, 'index'])->middleware('auth:sanctum');
+Route::delete('/api/reservations/{id}', [ReservationController::class, 'delete'])->middleware('auth:sanctum');
 Route::get('/api/reservations/{code}', [ReservationController::class, 'showByCode']);
+Route::get('/api/reservations/{id}', [ReservationController::class, 'show']);
+Route::get('/api/reservations/user/{userId}', [ReservationController::class, 'getByUser']);
+
 
 
 Route::get('/api/halls', [HallController::class, 'index']);
@@ -56,3 +62,7 @@ Route::get('/password/reset/{token}', [PasswordResetController::class, 'showRese
 
 
 
+Route::post('/api/payu/create-order', [PayUController::class, 'createOrder']);
+Route::get('/payment-status', function () {
+    return redirect('http://localhost:8080/paymentStatus');
+});

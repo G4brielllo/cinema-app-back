@@ -72,9 +72,15 @@ class ReservationController extends Controller
             'reserved_seats' => $reservedSeatIds,
         ]);
     }
+    public function delete($id)
+    {
+        $reservation = Reservation::findOrFail($id);
+        $reservation->delete();
+        return response()->json(['message' => 'Reservation deleted successfully']);
+    }
     public function showByCode($code)
     {
-        $reservation = Reservation::with(['user', 'screening.movie'])->where('reservation_code', $code)->first();
+        $reservation = Reservation::with(['user', 'screening.movie', 'seat'])->where('reservation_code', $code)->first();
 
         if (!$reservation) {
             return response()->json(['error' => 'Reservation not found'], 404);
@@ -82,4 +88,23 @@ class ReservationController extends Controller
 
         return response()->json($reservation);
     }
+    public function show($id)
+    {
+        $reservation = Reservation::with(['user', 'screening.movie', 'seat'])->find($id);
+
+        if (!$reservation) {
+            return response()->json(['error' => 'Reservation not found'], 404);
+        }
+
+        return response()->json($reservation);
+    }
+    public function getByUser($userId)
+    {
+        $reservations = Reservation::with(['user', 'screening.movie', 'seat'])
+            ->where('user_id', $userId)
+            ->get();
+
+        return response()->json($reservations);
+    }
+
 }

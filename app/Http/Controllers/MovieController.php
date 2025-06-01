@@ -46,6 +46,9 @@ class MovieController extends Controller
             'script' => 'required|string',
             'production_year' => 'required|integer',
             'cast' => 'required|string',
+            'format' => 'required|string',
+            'audio_type' => 'required|string',
+            'announcement' => 'boolean',
         ]);
 
         $movie = Movie::create($data);
