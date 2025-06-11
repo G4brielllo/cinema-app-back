@@ -12,11 +12,18 @@ use Carbon\Carbon;
 use App\Mail\ReservationConfirmation;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use App\Services\PayUService;
 
 
 
 class ReservationController extends Controller
 {
+    protected $payu;
+    public function __construct(PayUService $payu)
+    {
+        $this->payu = $payu;
+    }
+
     public function index()
     {
         $userId = Auth::id();
@@ -34,43 +41,56 @@ class ReservationController extends Controller
             'seats.*.number' => 'required|integer',
         ]);
 
-        $userId = Auth::id();
         $reservationCode = strtoupper(Str::random(8));
         $screeningId = $request->input('screening_id');
         $selectedSeats = $request->input('seats');
-
+        $userId = Auth::id();
         $reservedSeatIds = [];
+        $totalAmount = 0;
+
         foreach ($selectedSeats as $seatInfo) {
-            $seat = Seat::where('screening_id', $screeningId)
+            
+            $existing = Seat::where('screening_id', $screeningId)
                 ->where('row', $seatInfo['row'])
                 ->where('number', $seatInfo['number'])
-                ->where('is_booked', false)
                 ->first();
-            if (!$seat) {
-                return response()->json(['message' => 'Wybrane miejsce jest niedostępne'], 400);
-            }
-            $seat->is_booked = true;
-            $seat->save();
 
-            $reservation = Reservation::create([
+            if ($existing) {
+                return response()->json(['message' => 'Wybrane miejsce jest już zarezerwowane'], 400);
+            }
+
+            $seat = Seat::create([//bookowanie miejsca
+                'screening_id' => $screeningId,
+                'row' => $seatInfo['row'],
+                'number' => $seatInfo['number'],
+                'is_booked' => true,
+            ]);
+
+
+            $reservation = Reservation::create([//tworzenie rezerwacji
                 'user_id' => $userId,
                 'screening_id' => $screeningId,
                 'seat_id' => $seat->id,
                 'reservation_time' => Carbon::now(),
-                'status' => 'reserved',
+                'status' => 'pending',
                 'reservation_code' => $reservationCode,
             ]);
-            $reservedSeatIds[] = $seat->id;
         }
-        $user = Auth::user();
-
-        Mail::to($user->email)->send(new ReservationConfirmation($reservationCode));
-
         return response()->json([
             'message' => 'Rezerwacja została pomyślnie zrealizowana',
             'reservation_code' => $reservationCode,
             'reserved_seats' => $reservedSeatIds,
         ]);
+
+        // $user = Auth::user();
+
+        Mail::to($user->email)->send(new ReservationConfirmation($reservationCode));
+
+        // return response()->json([
+        //     'message' => 'Rezerwacja została pomyślnie zrealizowana',
+        //     'reservation_code' => $reservationCode,
+        //     'reserved_seats' => $reservedSeatIds,
+        // ]);
     }
     public function delete($id)
     {

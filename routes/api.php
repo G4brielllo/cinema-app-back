@@ -63,6 +63,9 @@ Route::get('/password/reset/{token}', [PasswordResetController::class, 'showRese
 
 
 Route::post('/api/payu/create-order', [PayUController::class, 'createOrder']);
+
+Route::post('/api/payu/notify', [PayUController::class, 'notify'])->name('payu.notify');
+
 // Route::get('/payment-status', function () {
 //     return redirect('http://localhost:8080/paymentStatus');
 // });

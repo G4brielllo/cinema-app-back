@@ -21,7 +21,7 @@ class PayUService
         ]);
     }
 
-    // Pobierz token OAuth2, cache'uj na 1h (PayU token ważny 1h)
+    // Pobieranie tokenu OAuth2, wazny' 1h
     protected function getAccessToken()
     {
         return Cache::remember('payu_access_token', 3600, function () {
@@ -40,26 +40,23 @@ class PayUService
     public function createOrder(array $orderData)
     {
         $accessToken = $this->getAccessToken();
+        \Log::info('PayU createOrder payload', $orderData);
 
-        // 1) Zrób request, nie follow-redirects, chroń JSON
         $response = Http::withToken($accessToken)
             ->withHeaders(['Accept' => 'application/json'])
             ->withoutRedirecting()
             ->post('https://secure.snd.payu.com/api/v2_1/orders', $orderData);
 
-        // 2) Jeżeli dostaniesz 201 z JSON-em, parsuj normalnie...
         if ($response->status() === 201 || $response->status() === 200) {
             return $response->json();
         }
 
-        // 3) Jeżeli dostaniesz 302, weź Location i zwróć klientowi
         if (in_array($response->status(), [301, 302])) {
             return [
                 'redirectUri' => $response->header('Location'),
             ];
         }
 
-        // 4) W pozostałych wypadkach rzuć wyjątek
         $body = $response->body();
         \Log::error("PayU unexpected response ({$response->status()}): {$body}");
         throw new \Exception("PayU createOrder failed: {$response->status()}");
