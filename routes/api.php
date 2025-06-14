@@ -10,6 +10,8 @@ use App\Http\Controllers\SeatController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PayUController;
+use Illuminate\Support\Facades\Artisan;
+
 
 
 
@@ -69,3 +71,8 @@ Route::post('/api/payu/notify', [PayUController::class, 'notify'])->name('payu.n
 // Route::get('/payment-status', function () {
 //     return redirect('http://localhost:8080/paymentStatus');
 // });
+
+Route::get('/api/delete-expired-reservations', function () {
+    Artisan::call('reservations:delete-expired');
+    return response()->json(['status' => 'OK']);
+});

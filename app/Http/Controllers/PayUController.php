@@ -73,7 +73,7 @@ class PayUController extends Controller
                     $reservation->seat->save();
                 }
             } elseif (in_array($status, ['CANCELED', 'FAILED'])) {
-                $reservation->status = 'cancelled';
+                $reservation->status = 'canceled';
                 if ($reservation->seat) {
                     $reservation->seat->is_booked = false;
                     $reservation->seat->save();

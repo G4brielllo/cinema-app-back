@@ -53,6 +53,7 @@ class ReservationController extends Controller
             $existing = Seat::where('screening_id', $screeningId)
                 ->where('row', $seatInfo['row'])
                 ->where('number', $seatInfo['number'])
+                ->where('is_booked', true)
                 ->first();
 
             if ($existing) {
@@ -82,15 +83,13 @@ class ReservationController extends Controller
             'reserved_seats' => $reservedSeatIds,
         ]);
 
-        // $user = Auth::user();
-
         Mail::to($user->email)->send(new ReservationConfirmation($reservationCode));
 
-        // return response()->json([
-        //     'message' => 'Rezerwacja została pomyślnie zrealizowana',
-        //     'reservation_code' => $reservationCode,
-        //     'reserved_seats' => $reservedSeatIds,
-        // ]);
+        return response()->json([
+            'message' => 'Rezerwacja została pomyślnie zrealizowana',
+            'reservation_code' => $reservationCode,
+            'reserved_seats' => $reservedSeatIds,
+        ]);
     }
     public function delete($id)
     {
