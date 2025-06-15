@@ -31,6 +31,15 @@ class ReservationController extends Controller
 
         return response()->json($reservations);
     }
+    private function generateUniqueReservationCode()
+    {
+        do {
+            $code = strtoupper(Str::random(8));
+        } while (Reservation::where('reservation_code', $code)->exists());
+
+        return $code;
+    }
+
 
     public function store(Request $request)
     {
@@ -41,7 +50,7 @@ class ReservationController extends Controller
             'seats.*.number' => 'required|integer',
         ]);
 
-        $reservationCode = strtoupper(Str::random(8));
+        $reservationCode = $this->generateUniqueReservationCode();
         $screeningId = $request->input('screening_id');
         $selectedSeats = $request->input('seats');
         $userId = Auth::id();
@@ -60,22 +69,23 @@ class ReservationController extends Controller
                 return response()->json(['message' => 'Wybrane miejsce jest już zarezerwowane'], 400);
             }
 
+        }
+        $reservation = Reservation::create([//tworzenie rezerwacji
+            'user_id' => $userId,
+            'screening_id' => $screeningId,
+            'reservation_time' => Carbon::now(),
+            'status' => 'pending',
+            'reservation_code' => $reservationCode,
+        ]);
+
+        foreach($selectedSeats as $seatInfo){
             $seat = Seat::create([//bookowanie miejsca
-                'screening_id' => $screeningId,
-                'row' => $seatInfo['row'],
-                'number' => $seatInfo['number'],
-                'is_booked' => true,
-            ]);
-
-
-            $reservation = Reservation::create([//tworzenie rezerwacji
-                'user_id' => $userId,
-                'screening_id' => $screeningId,
-                'seat_id' => $seat->id,
-                'reservation_time' => Carbon::now(),
-                'status' => 'pending',
-                'reservation_code' => $reservationCode,
-            ]);
+                    'screening_id' => $screeningId,
+                    'row' => $seatInfo['row'],
+                    'number' => $seatInfo['number'],
+                    'is_booked' => true,
+                ]);
+                $reservation->seats()->attach($seat->id);
         }
         return response()->json([
             'message' => 'Rezerwacja została pomyślnie zrealizowana',
@@ -99,10 +109,12 @@ class ReservationController extends Controller
     }
     public function showByCode($code)
     {
-        $reservation = Reservation::with(['user', 'screening.movie', 'seat'])->where('reservation_code', $code)->first();
+        $reservation = Reservation::with(['user', 'screening.movie', 'seats'])
+            ->where('reservation_code', $code)
+            ->first();
 
         if (!$reservation) {
-            return response()->json(['error' => 'Reservation not found'], 404);
+            return response()->json(['error' => 'Rezerwacja nie znaleziona!'], 404);
         }
 
         return response()->json($reservation);

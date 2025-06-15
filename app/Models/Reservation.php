@@ -9,7 +9,6 @@ class Reservation extends Model
     protected $fillable = [
         'user_id',
         'screening_id',
-        'seat_id',
         'reservation_code',
         'status',
         'reservation_time',
@@ -27,6 +26,10 @@ class Reservation extends Model
     public function seat()
     {
         return $this->belongsTo(Seat::class);
+    }
+    public function seats()
+    {
+        return $this->belongsToMany(Seat::class, 'reservation_seat');
     }
 
 }

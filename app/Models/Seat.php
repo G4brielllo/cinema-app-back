@@ -17,4 +17,7 @@ class Seat extends Model
     {
         return $this->belongsTo(Hall::class);
     }
+    public function reservations(){
+        return $this->belongsToMany(Reservation::class, 'reservation_seat');
+    }
 }

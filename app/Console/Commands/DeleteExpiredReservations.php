@@ -15,13 +15,16 @@ class DeleteExpiredReservations extends Command
     {
         Log::info('[CRON] reservations:delete-expired started at ' . now());
         $expired = Reservation::whereIn('status', ['canceled', 'pending'])
-            ->where('reservation_time', '<', Carbon::now()->subMinutes(3))
+            ->where('reservation_time', '<', Carbon::now()->subMinutes(0.5))
+            ->with(['seats'])
             ->get();
             $deletedCount = 0;
             foreach ($expired as $reservation) {
-                if ($reservation->seat) {
-                    $reservation->seat->is_booked = false;
-                    $reservation->seat->save();
+                $reservation->seats()->detach();
+
+                foreach($reservation->seats as $seat) {
+                    $seat->update (['is_booked' => false]);
+                    $seat->delete();
                 }
                 $reservation->delete();
                 $deletedCount++;
