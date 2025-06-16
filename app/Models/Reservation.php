@@ -10,6 +10,7 @@ class Reservation extends Model
         'user_id',
         'screening_id',
         'reservation_code',
+        'payu_order_id',
         'status',
         'reservation_time',
     ];

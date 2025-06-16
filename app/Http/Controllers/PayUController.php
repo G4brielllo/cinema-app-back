@@ -34,7 +34,7 @@ class PayUController extends Controller
             'continueUrl' => $data['continueUrl'],
             'customerIp' => $request->ip(),
             'merchantPosId' => config('payu.pos_id'),
-            'description' => 'Rezerwacja biletu w kinie',
+            'description' => 'Rezerwacja biletu w kinie: ' . $reservationCode,
             'currencyCode' => $data['currencyCode'],
             'totalAmount' => $data['totalAmount'],
             'products' => $data['products'],
@@ -44,17 +44,37 @@ class PayUController extends Controller
         $result = $this->payu->createOrder($orderData);
         return response()->json(['data' => $result]);
     }
+    public function refund(Request $request)
+    {
+        $data = $request->validate([
+            'orderId' => 'required|string',
+            'amount' => 'required|integer',
+            'description' => 'required|string',
+        ]);
+        try{
+            $response = $this->payu->refund($data['orderId'], $data['amount'], $data['description']);
+            return [
+            'success' => true,
+            'status' => $response['status']['statusCode'] ?? 'UNKNOWN',
+            'data' => $response
+        ];
+        }catch (\Exception $e) {
+            \Log::error('PayU refund error', ['message' => $e->getMessage()]);
+            return response()->json(['error' => 'Refund failed'], 500);
+        }
 
+    }
     public function notify(Request $request)
     {
         $data = $request->all();
         \Log::info('PayU notify received', $data);
 
         $extOrderId = $data['order']['extOrderId'] ?? null;
+        $payuOrderId = $data['order']['orderId'] ?? null;
         $status = $data['order']['status'] ?? null;
 
-        if (!$extOrderId || !$status) {
-            \Log::error('Missing extOrderId or status', $data);
+        if (!$extOrderId || !$payuOrderId || !$status) {
+            \Log::error('Missing required fields', $data);
             return response()->json(['error' => 'Invalid data'], 400);
         }
 
@@ -66,27 +86,32 @@ class PayUController extends Controller
         }
 
         foreach ($reservations as $reservation) {
+            $updateData = ['status' => $this->mapStatus($status)];
+            
             if ($status === 'COMPLETED') {
-                $reservation->status = 'confirmed';
-                if ($reservation->seat) {
-                    $reservation->seat->is_booked = true;
-                    $reservation->seat->save();
-                }
-            } elseif (in_array($status, ['CANCELED', 'FAILED'])) {
-                $reservation->status = 'canceled';
-                if ($reservation->seat) {
-                    $reservation->seat->is_booked = false;
-                    $reservation->seat->save();
-                }
-            } else {
-                $reservation->status = 'pending';
+                $updateData['payu_order_id'] = $payuOrderId;
             }
-            $reservation->save();
+
+            $reservation->update($updateData);
+
+            if ($reservation->seats) {
+                $reservation->seats()->update([
+                    'is_booked' => $status === 'COMPLETED'
+                ]);
+            }
         }
 
         return response()->json(['message' => 'OK']);
     }
 
+    private function mapStatus($payuStatus)
+    {
+        return match($payuStatus) {
+            'COMPLETED' => 'confirmed',
+            'CANCELED', 'FAILED' => 'canceled',
+            default => 'pending'
+        };
+    }
 
 }
 

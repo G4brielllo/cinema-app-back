@@ -48,7 +48,7 @@ Route::get('/api/reservations', [ReservationController::class, 'index'])->middle
 Route::delete('/api/reservations/{id}', [ReservationController::class, 'delete'])->middleware('auth:sanctum');
 Route::get('/api/reservations/{code}', [ReservationController::class, 'showByCode']);
 Route::get('/api/reservations/{id}', [ReservationController::class, 'show']);
-Route::get('/api/reservations/user/{userId}', [ReservationController::class, 'getByUser']);
+Route::get('/api/reservations/user/{userId}', [ReservationController::class, 'checkUsersReservations']);
 
 
 

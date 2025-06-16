@@ -13,6 +13,7 @@ use App\Mail\ReservationConfirmation;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Services\PayUService;
+use Illuminate\Support\Facades\DB;
 
 
 
@@ -55,7 +56,6 @@ class ReservationController extends Controller
         $selectedSeats = $request->input('seats');
         $userId = Auth::id();
         $reservedSeatIds = [];
-        $totalAmount = 0;
 
         foreach ($selectedSeats as $seatInfo) {
             
@@ -87,13 +87,9 @@ class ReservationController extends Controller
                 ]);
                 $reservation->seats()->attach($seat->id);
         }
-        return response()->json([
-            'message' => 'Rezerwacja została pomyślnie zrealizowana',
-            'reservation_code' => $reservationCode,
-            'reserved_seats' => $reservedSeatIds,
-        ]);
 
-        Mail::to($user->email)->send(new ReservationConfirmation($reservationCode));
+        $userId = Auth::id();
+        // Mail::to($user->email)->send(new ReservationConfirmation($reservationCode));
 
         return response()->json([
             'message' => 'Rezerwacja została pomyślnie zrealizowana',
@@ -103,9 +99,49 @@ class ReservationController extends Controller
     }
     public function delete($id)
     {
-        $reservation = Reservation::findOrFail($id);
-        $reservation->delete();
-        return response()->json(['message' => 'Reservation deleted successfully']);
+        DB::beginTransaction();
+
+        try {
+            $reservation = Reservation::with(['seats'])->findOrFail($id);
+            
+            if ($reservation->status === 'confirmed' && $reservation->payu_order_id) {
+                $refundResponse = $this->payu->refund(
+                    $reservation->payu_order_id,
+                    $this->calculateTotalAmount($reservation->seats),
+                    'Anulowanie rezerwacji #' . $reservation->id
+                );
+                
+                \Log::info('PayU refund response:', $refundResponse);
+            }
+
+            $reservation->seats()->update(['is_booked' => false]);
+            $reservation->seats()->detach();
+            
+            $reservation->update(['status' => 'refunded']);
+            
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Rezerwacja anulowana' . 
+                    ($reservation->payu_order_id ? ' i zwrot środków został zainicjowany' : ''),
+                'payu_order_id' => $reservation->payu_order_id
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Błąd podczas anulowania rezerwacji: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Wystąpił błąd podczas anulowania rezerwacji',
+                'details' => $e->getMessage(),
+                'payu_order_id' => $reservation->payu_order_id ?? null
+            ], 500);
+        }
+    }
+   
+    private function calculateTotalAmount($seats)
+    {
+        $ticketPrice = 25;
+        return (count($seats) * $ticketPrice) * 100;
     }
     public function showByCode($code)
     {
@@ -129,11 +165,22 @@ class ReservationController extends Controller
 
         return response()->json($reservation);
     }
-    public function getByUser($userId)
+    public function checkUsersReservations($userId)
     {
-        $reservations = Reservation::with(['user', 'screening.movie', 'seat'])
+        $reservations = Reservation::with(['user', 'screening.movie', 'seats'])
             ->where('user_id', $userId)
+            ->where('status', 'confirmed')
             ->get();
+
+        $reservations->each(function ($reservation) {
+            $reservation->seat_data = $reservation->seats->map(function($seat) {
+                return [
+                    'seat_id' => $seat->id,
+                    'row' => $seat->row,
+                    'number' => $seat->number,
+                ];
+            })->values();
+        });
 
         return response()->json($reservations);
     }

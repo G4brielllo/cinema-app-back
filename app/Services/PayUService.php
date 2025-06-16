@@ -61,4 +61,31 @@ class PayUService
         \Log::error("PayU unexpected response ({$response->status()}): {$body}");
         throw new \Exception("PayU createOrder failed: {$response->status()}");
     }
+    public function refund($orderId, $amount, $description)
+    {
+        $url = (config('payu.sandbox') 
+            ? 'https://secure.snd.payu.com' 
+            : 'https://secure.payu.com') . '/api/v2_1/orders/' . $orderId . '/refunds';
+        
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $this->getAccessToken(),
+            'Content-Type' => 'application/json'
+        ])->post($url, [
+            'refund' => [
+                'description' => $description,
+                'amount' => $amount
+            ]
+        ]);
+        
+        if ($response->failed()) {
+            \Log::error('PayU refund error:', [
+                'status' => $response->status(),
+                'response' => $response->body(),
+                'orderId' => $orderId
+            ]);
+            throw new \Exception('PayU error: ' . $response->body());
+        }
+        
+        return $response->json();
+    }
 }
