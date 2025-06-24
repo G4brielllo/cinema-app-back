@@ -1,18 +1,23 @@
 <?php
 
 namespace App\Console;
+
 use App\Console\Commands\DeleteExpiredReservations;
+use App\Console\Commands\AutoArchiveMovies;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+
 class Kernel extends ConsoleKernel
 {
     /**
      * The Artisan commands provided by your application.
+     * Remove this property if you prefer auto-discovery of commands.
      *
-     * @var array
+     * @var array<int, class-string<\Illuminate\Console\Command>>
      */
     protected $commands = [
         DeleteExpiredReservations::class,
+        AutoArchiveMovies::class,
     ];
 
     /**
@@ -21,9 +26,11 @@ class Kernel extends ConsoleKernel
      * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
      * @return void
      */
-    protected function schedule(Schedule $schedule)
+    protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('reservations:delete-expired')->everyMinute();
+        // Activate scheduled tasks by uncommenting
+        $schedule->command('reservations:delete-expired')->everyMinute()->withoutOverlapping();
+        $schedule->command('movies:auto-archive-movies')->everyMinute()->withoutOverlapping();
     }
 
     /**
@@ -31,7 +38,7 @@ class Kernel extends ConsoleKernel
      *
      * @return void
      */
-    protected function commands()
+    protected function commands(): void
     {
         $this->load(__DIR__.'/Commands');
         require base_path('routes/console.php');

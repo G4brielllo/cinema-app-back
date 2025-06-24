@@ -7,6 +7,8 @@ class Screening extends Model
 {
     protected $fillable = [
         'movie_id',
+        'format',
+        'audio_type',
         'screening_date',
         'screening_time',
         'hall_id',

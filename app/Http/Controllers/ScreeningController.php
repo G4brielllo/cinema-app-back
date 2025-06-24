@@ -39,6 +39,8 @@ class ScreeningController extends Controller
             'screening_date' => 'required|date',
             'screening_time' => 'required|date_format:H:i',
             'hall_id' => 'required|integer|nullable',
+            'format' => 'required|string',
+            'audio_type' => 'required|string',
         ]);
 
         // Domyślnie hall_id = 1
@@ -71,6 +73,8 @@ class ScreeningController extends Controller
             'screening_date' => 'date',
             'screening_time' => 'date_format:H:i',
             'hall_id' => 'integer|nullable',
+            'format' => 'required|string',
+            'audio_type' => 'required|string',
         ]);
 
         $screening = Screening::findOrFail($id);

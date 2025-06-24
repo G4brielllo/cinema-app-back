@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Movie;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 
 class MovieController extends Controller
@@ -38,18 +39,21 @@ class MovieController extends Controller
             'title' => 'required|string',
             'description' => 'required|string',
             'category' => 'required|string',
-            'show_time' => 'required|date',
             'duration' => 'required|integer',
-            'release_date' => 'required|date',
             'image' => 'string',
+            'trailer' => 'string',
             'direction' => 'required|string',
             'script' => 'required|string',
             'production_year' => 'required|integer',
+            'playing_from' => 'required|date',
+            'playing_until' => 'required|date',
             'cast' => 'required|string',
-            'format' => 'required|string',
-            'audio_type' => 'required|string',
             'announcement' => 'boolean',
+            'status' => 'string',
         ]);
+        if (!isset($data['status'])) {
+            $data['status'] = 'movie';
+        }
 
         $movie = Movie::create($data);
         return response()->json($movie, 201);
@@ -72,18 +76,32 @@ class MovieController extends Controller
             'title' => 'string',
             'description' => 'string',
             'category' => 'string',
-            'show_time' => 'date',
             'duration' => 'integer',
-            'release_date' => 'date',
             'image' => 'string',
+            'trailer' => 'string',
             'direction' => 'string',
             'script' => 'string',
             'production_year' => 'integer',
+            'playing_from' => 'date',
+            'playing_until' => 'date',
             'cast' => 'string',
+            'status' => 'string',
         ]);
 
         $movie = Movie::findOrFail($id);
         $movie->update($data);
         return response()->json($movie);
+    }
+    public function autoArchiveMovies()
+    {
+        $today = Carbon::today();
+        $count = Movie::whereDate('playing_until', '<', $today)
+            ->where('status', '!=', 'archive')
+            ->update(['status' => 'archive']);
+
+        return response()->json([
+            'archived_movies_count' => $count,
+            'message' => 'Status zaktualizowany dla przeterminowanych filmów.'
+        ]);
     }
 }

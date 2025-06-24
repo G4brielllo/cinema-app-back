@@ -76,3 +76,8 @@ Route::get('/api/delete-expired-reservations', function () {
     Artisan::call('reservations:delete-expired');
     return response()->json(['status' => 'OK']);
 });
+
+Route::get('/api/auto-archive-movies', function () {
+    Artisan::call('movies:auto-archive-movies');
+    return response()->json(['status' => 'OK']);
+});

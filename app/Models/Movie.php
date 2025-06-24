@@ -10,17 +10,19 @@ class Movie extends Model
         'title',
         'description',
         'category',
-        'show_time',
+        'playing_from',
+        'playing_until',
         'duration',
-        'release_date',
         'image',
+        'trailer',
         'direction',
         'script',
         'production_year',
         'cast',
-        'format',
-        'audio_type',
-        'announcement',
+        'status',
+    ];
+    protected $attributes = [
+        'status' => 'movie',
     ];
     public function screenings()
     {

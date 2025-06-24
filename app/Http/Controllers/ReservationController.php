@@ -102,8 +102,18 @@ class ReservationController extends Controller
         DB::beginTransaction();
 
         try {
-            $reservation = Reservation::with(['seats'])->findOrFail($id);
-            
+            $reservation = Reservation::with(['seats', 'screening'])->findOrFail($id);
+
+            // Sprawdzenie czasu do seansu
+            $screeningDateTime = Carbon::parse($reservation->screening->screening_date . ' ' . $reservation->screening->screening_time);
+            $now = Carbon::now();
+
+            if ($screeningDateTime->diffInMinutes($now, false) > -60) {
+                // Jeśli do seansu mniej niż godzina (diffInMinutes zwraca wartość ujemną, jeśli screeningDateTime > now)
+                return response()->json([
+                    'error' => 'Nie można anulować rezerwacji na mniej niż godzinę przed seansem.'
+                ], 403);
+            }
             if ($reservation->status === 'confirmed' && $reservation->payu_order_id) {
                 $refundResponse = $this->payu->refund(
                     $reservation->payu_order_id,
