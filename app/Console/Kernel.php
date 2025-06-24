@@ -28,7 +28,6 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Activate scheduled tasks by uncommenting
         $schedule->command('reservations:delete-expired')->everyMinute()->withoutOverlapping();
         $schedule->command('movies:auto-archive-movies')->everyMinute()->withoutOverlapping();
     }
