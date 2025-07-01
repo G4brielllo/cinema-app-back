@@ -29,6 +29,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::get('/api/users', [UserController::class, 'index'])->middleware('auth:sanctum');
 Route::delete('/api/users/{id}', [UserController::class, 'delete'])->middleware('auth:sanctum');
+Route::put('/api/users/{id}', [UserController::class, 'update'])->middleware('auth:sanctum');
 
 
 Route::get('/api/movies', [MovieController::class, 'index']);

@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -14,14 +13,14 @@ class ReservationConfirmation extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $reservationCode;
+    public $reservation;  // zamiast tylko kodu - całe dane rezerwacji
 
     /**
      * Create a new message instance.
      */
-    public function __construct($reservationCode)
+    public function __construct($reservation)
     {
-        $this->reservationCode = $reservationCode;
+        $this->reservation = $reservation;
     }
 
     /**
@@ -41,7 +40,10 @@ class ReservationConfirmation extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.reservation_confirmation'
+            view: 'emails.reservation_confirmation',
+            with: [
+                'reservation' => $this->reservation,
+            ]
         );
     }
 

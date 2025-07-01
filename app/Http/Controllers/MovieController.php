@@ -41,7 +41,7 @@ class MovieController extends Controller
             'category' => 'required|string',
             'duration' => 'required|integer',
             'image' => 'string',
-            'trailer' => 'string',
+            'trailer' => 'nullable|string',
             'direction' => 'required|string',
             'script' => 'required|string',
             'production_year' => 'required|integer',

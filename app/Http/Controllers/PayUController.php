@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\PayUService;
 use App\Models\Reservation;
+use Illuminate\Support\Facades\Mail;
 
 class PayUController extends Controller
 {
@@ -98,6 +99,10 @@ class PayUController extends Controller
                 $reservation->seats()->update([
                     'is_booked' => $status === 'COMPLETED'
                 ]);
+            }
+
+            if ($updateData['status'] === 'confirmed') {
+                 Mail::to($reservation->user->email)->send(new \App\Mail\ReservationConfirmation($reservation));
             }
         }
 

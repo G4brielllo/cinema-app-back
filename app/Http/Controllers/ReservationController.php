@@ -87,9 +87,10 @@ class ReservationController extends Controller
                 ]);
                 $reservation->seats()->attach($seat->id);
         }
+            $reservation->load('screening.movie', 'seats');
 
-        $userId = Auth::id();
-        // Mail::to($user->email)->send(new ReservationConfirmation($reservationCode));
+        // $user = Auth::user();
+        // Mail::to($user->email)->send(new ReservationConfirmation($reservation));
 
         return response()->json([
             'message' => 'Rezerwacja została pomyślnie zrealizowana',
@@ -115,7 +116,7 @@ class ReservationController extends Controller
             if ($reservation->status === 'confirmed' && $reservation->payu_order_id) {
                 $refundResponse = $this->payu->refund(
                     $reservation->payu_order_id,
-                    $this->calculateTotalAmount($reservation->seats),
+                    $this->calculateTotalAmount($reservation->seats, $reservation->screening),
                     'Anulowanie rezerwacji #' . $reservation->id
                 );
                 
@@ -146,10 +147,17 @@ class ReservationController extends Controller
         }
     }
    
-    private function calculateTotalAmount($seats)
+    private function calculateTotalAmount($seats, $screening)
     {
-        $ticketPrice = 25;
+            \Log::info('Screening format in calculateTotalAmount:', ['format' => $screening->format]);
+        if($screening->format === '3D') {
+            $ticketPrice = 25;
+        } else {
+            $ticketPrice = 20;
+        }
+        \Log::info('Screening format:', ['format' => $reservation->screening->format]);
         return (count($seats) * $ticketPrice) * 100;
+
     }
     public function showByCode($code)
     {
