@@ -23,28 +23,47 @@ class PayUController extends Controller
         $data = $request->validate([
             'notifyUrl' => 'required|url',
             'continueUrl' => 'required|url',
-            'products' => 'required|array',
-            'totalAmount' => 'required|integer',
-            'currencyCode' => 'required|string',
-            // 'extOrderId' => 'required|string',
+            'extOrderId' => 'required|string',
         ]);
-        
-        $reservationCode = $request->input('extOrderId');
+
+        $reservationCode = $data['extOrderId'];
+
+        $reservation = Reservation::with(['seats', 'screening'])->where('reservation_code', $reservationCode)->first();
+
+        if (!$reservation) {
+            \Log::error("Reservation not found for code: $reservationCode");
+            return response()->json(['error' => 'Reservation not found'], 404);
+        }
+
+        $ticketPrice = $reservation->screening->format === '3D' ? 25 : 22;
+        $seatCount = $reservation->seats->count();
+        $totalAmount = $ticketPrice * $seatCount * 100;
+
         $orderData = [
             'notifyUrl' => $data['notifyUrl'],
             'continueUrl' => $data['continueUrl'],
             'customerIp' => $request->ip(),
             'merchantPosId' => config('payu.pos_id'),
             'description' => 'Rezerwacja biletu w kinie: ' . $reservationCode,
-            'currencyCode' => $data['currencyCode'],
-            'totalAmount' => $data['totalAmount'],
-            'products' => $data['products'],
+            'currencyCode' => 'PLN',
+            'totalAmount' => $totalAmount,
+            'products' => [
+                [
+                    'name' => 'Bilet do kina ' . $reservation->screening->format,
+                    'unitPrice' => $ticketPrice * 100,
+                    'quantity' => $seatCount,
+                ],
+            ],
             'extOrderId' => $reservationCode,
         ];
+
         \Log::info('Sending extOrderId to PayU', ['extOrderId' => $reservationCode]);
+        \Log::info('PayU createOrder payload', $orderData);
+
         $result = $this->payu->createOrder($orderData);
         return response()->json(['data' => $result]);
     }
+
     public function refund(Request $request)
     {
         $data = $request->validate([

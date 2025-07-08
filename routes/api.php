@@ -10,7 +10,9 @@ use App\Http\Controllers\SeatController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PayUController;
+use App\Http\Controllers\HomePageSlideController;
 use Illuminate\Support\Facades\Artisan;
+
 
 
 
@@ -82,3 +84,6 @@ Route::get('/api/auto-archive-movies', function () {
     Artisan::call('movies:auto-archive-movies');
     return response()->json(['status' => 'OK']);
 });
+
+Route::post('/api/slides', [HomePageSlideController::class, 'store'])->middleware('auth:sanctum');
+Route::get('/api/slides', [HomePageSlideController::class, 'index'])->middleware('auth:sanctum');

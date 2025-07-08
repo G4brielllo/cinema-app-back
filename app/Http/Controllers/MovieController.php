@@ -44,7 +44,7 @@ class MovieController extends Controller
             'trailer' => 'nullable|string',
             'direction' => 'required|string',
             'script' => 'required|string',
-            'production_year' => 'required|integer',
+            'release_date' => 'required|date',
             'playing_from' => 'required|date',
             'playing_until' => 'required|date',
             'cast' => 'required|string',
