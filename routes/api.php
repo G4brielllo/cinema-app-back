@@ -11,6 +11,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PayUController;
 use App\Http\Controllers\HomePageSlideController;
+use App\Http\Controllers\PromotionController;
 use Illuminate\Support\Facades\Artisan;
 
 
@@ -85,5 +86,9 @@ Route::get('/api/auto-archive-movies', function () {
     return response()->json(['status' => 'OK']);
 });
 
+Route::get('/api/slides', [HomePageSlideController::class, 'index']);
 Route::post('/api/slides', [HomePageSlideController::class, 'store'])->middleware('auth:sanctum');
-Route::get('/api/slides', [HomePageSlideController::class, 'index'])->middleware('auth:sanctum');
+
+Route::get('/api/promotions', [PromotionController::class, 'index'])->middleware('auth:sanctum');
+Route::post('/api/promotions', [PromotionController::class, 'store'])->middleware('auth:sanctum');
+Route::delete('/api/promotions/{id}', [PromotionController::class, 'delete'])->middleware('auth:sanctum');
