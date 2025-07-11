@@ -21,10 +21,11 @@ class HallController extends Controller
             'rows' => $hall->rows,
             'seats_per_row' => $hall->seats_per_row,
         ]);
-        
+
     }
 
-    public function store(){
+    public function store()
+    {
         $user = Auth::user();
 
         if (!$user || $user->role !== 'admin') {

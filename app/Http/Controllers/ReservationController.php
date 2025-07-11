@@ -44,6 +44,7 @@ class ReservationController extends Controller
 
     public function store(Request $request)
     {
+        $reservedSeatIds = [];
         $request->validate([
             'screening_id' => 'required|integer',
             'seats' => 'required|array',
@@ -55,10 +56,10 @@ class ReservationController extends Controller
         $screeningId = $request->input('screening_id');
         $selectedSeats = $request->input('seats');
         $userId = Auth::id();
-        $reservedSeatIds = [];
+
+        $totalAmount = $this->calculateTotalAmount($selectedSeats, Screening::find($screeningId));
 
         foreach ($selectedSeats as $seatInfo) {
-            
             $existing = Seat::where('screening_id', $screeningId)
                 ->where('row', $seatInfo['row'])
                 ->where('number', $seatInfo['number'])
@@ -68,29 +69,29 @@ class ReservationController extends Controller
             if ($existing) {
                 return response()->json(['message' => 'Wybrane miejsce jest już zarezerwowane'], 400);
             }
-
         }
-        $reservation = Reservation::create([//tworzenie rezerwacji
+
+        $reservation = Reservation::create([
             'user_id' => $userId,
             'screening_id' => $screeningId,
             'reservation_time' => Carbon::now(),
             'status' => 'pending',
             'reservation_code' => $reservationCode,
+            'total_amount' => $totalAmount,  // <== poprawka tutaj
+            'selected_seats_json' => json_encode($selectedSeats),
         ]);
 
-        foreach($selectedSeats as $seatInfo){
-            $seat = Seat::create([//bookowanie miejsca
-                    'screening_id' => $screeningId,
-                    'row' => $seatInfo['row'],
-                    'number' => $seatInfo['number'],
-                    'is_booked' => true,
-                ]);
-                $reservation->seats()->attach($seat->id);
+        foreach ($selectedSeats as $seatInfo) {
+            $seatData[] = [
+                'row' => $seatInfo['row'],
+                'number' => $seatInfo['number'],
+            ];
         }
-            $reservation->load('screening.movie', 'seats');
 
-        // $user = Auth::user();
-        // Mail::to($user->email)->send(new ReservationConfirmation($reservation));
+        $reservation->selected_seats_json = json_encode($seatData); // tymczasowe zapisanie miejsc
+        $reservation->save();
+
+        $reservation->load('screening.movie', 'seats');
 
         return response()->json([
             'message' => 'Rezerwacja została pomyślnie zrealizowana',
@@ -119,19 +120,19 @@ class ReservationController extends Controller
                     $this->calculateTotalAmount($reservation->seats, $reservation->screening),
                     'Anulowanie rezerwacji #' . $reservation->id
                 );
-                
+
                 \Log::info('PayU refund response:', $refundResponse);
             }
 
             $reservation->seats()->update(['is_booked' => false]);
             $reservation->seats()->detach();
-            
+
             $reservation->update(['status' => 'refunded']);
-            
+
             DB::commit();
 
             return response()->json([
-                'message' => 'Rezerwacja anulowana' . 
+                'message' => 'Rezerwacja anulowana' .
                     ($reservation->payu_order_id ? ' i zwrot środków został zainicjowany' : ''),
                 'payu_order_id' => $reservation->payu_order_id
             ]);
@@ -146,16 +147,15 @@ class ReservationController extends Controller
             ], 500);
         }
     }
-   
+
     private function calculateTotalAmount($seats, $screening)
     {
-            \Log::info('Screening format in calculateTotalAmount:', ['format' => $screening->format]);
-        if($screening->format === '3D') {
+        \Log::info('Screening format in calculateTotalAmount:', ['format' => $screening->format]);
+        if ($screening->format === '3D') {
             $ticketPrice = 25;
         } else {
-            $ticketPrice = 20;
+            $ticketPrice = 22;
         }
-        \Log::info('Screening format:', ['format' => $reservation->screening->format]);
         return (count($seats) * $ticketPrice) * 100;
 
     }
@@ -189,7 +189,7 @@ class ReservationController extends Controller
             ->get();
 
         $reservations->each(function ($reservation) {
-            $reservation->seat_data = $reservation->seats->map(function($seat) {
+            $reservation->selected_seats_json = $reservation->seats->map(function ($seat) {
                 return [
                     'seat_id' => $seat->id,
                     'row' => $seat->row,

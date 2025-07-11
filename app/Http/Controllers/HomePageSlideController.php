@@ -14,16 +14,17 @@ class HomePageSlideController extends Controller
         $slides = HomePageSlide::all();
         return response()->json($slides);
     }
-    public function store(){
+    public function store()
+    {
         $user = Auth::user();
-        if(!$user || $user->role !== 'admin'){
-            return response() -> json(['error' => 'Forbidden'], 403);
+        if (!$user || $user->role !== 'admin') {
+            return response()->json(['error' => 'Forbidden'], 403);
         }
         $data = request()->validate([
             'title' => 'required|string',
             'image_url' => 'required|string',
-            'trailer_url' =>'required|string',
-            'position' =>'required|integer',
+            'trailer_url' => 'required|string',
+            'position' => 'required|integer',
         ]);
         $slide = HomePageSlide::create($data);
         return response()->json($slide, 201);

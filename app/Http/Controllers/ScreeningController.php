@@ -21,7 +21,8 @@ class ScreeningController extends Controller
         $screenings = Screening::with('movie')->get();
         return response()->json($screenings);
     }
-    public function show(){
+    public function show()
+    {
         $id = request()->route('id');
         $screening = Screening::with('movie')->findOrFail($id);
         return response()->json($screening);

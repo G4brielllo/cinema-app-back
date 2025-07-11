@@ -12,7 +12,9 @@ class Reservation extends Model
         'reservation_code',
         'payu_order_id',
         'status',
+        'total_amount',
         'reservation_time',
+        'selected_seats_json',
     ];
 
     public function screening()
@@ -30,7 +32,7 @@ class Reservation extends Model
     }
     public function seats()
     {
-        return $this->belongsToMany(Seat::class, 'reservation_seat');
+        return $this->belongsToMany(Seat::class, 'reservation_seat', 'reservation_id', 'seat_id');
     }
 
 }
