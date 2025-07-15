@@ -92,3 +92,7 @@ Route::post('/api/slides', [HomePageSlideController::class, 'store'])->middlewar
 Route::get('/api/promotions', [PromotionController::class, 'index'])->middleware('auth:sanctum');
 Route::post('/api/promotions', [PromotionController::class, 'store'])->middleware('auth:sanctum');
 Route::delete('/api/promotions/{id}', [PromotionController::class, 'delete'])->middleware('auth:sanctum');
+
+
+
+Route::get('/api/reservations_seat_detailed', [ReservationController::class, 'getReservationSeatsWithMovie'])->middleware('auth:sanctum');

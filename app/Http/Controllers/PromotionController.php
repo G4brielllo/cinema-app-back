@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Promotion;
+use Illuminate\Support\Facades\Auth;
+
 class PromotionController extends Controller
 {
     public function index()
@@ -12,6 +14,11 @@ class PromotionController extends Controller
     }
     public function store(Request $request)
     {
+        $user = Auth::user();
+
+        if (!$user || $user->role !== 'admin') {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -25,6 +32,11 @@ class PromotionController extends Controller
 
     public function delete($id)
     {
+        $user = Auth::user();
+
+        if (!$user || $user->role !== 'admin') {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
         $promotion = Promotion::findOrFail($id);
         $promotion->delete();
         return response()->json(['message' => 'Promotion deleted successfully']);

@@ -60,6 +60,12 @@ class MovieController extends Controller
     }
     public function delete($id)
     {
+        $user = Auth::user();
+
+        if (!$user || $user->role !== 'admin') {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+        
         $movie = Movie::findOrFail($id);
         $movie->delete();
         return response()->json(['message' => 'Movie deleted successfully']);

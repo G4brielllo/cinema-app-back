@@ -143,7 +143,7 @@ class PayUController extends Controller
                 $seatData = json_decode($reservation->selected_seats_json, true);
 
                 foreach ($seatData as $seatInfo) {
-                    $seat = Seat::create([
+                    $seat = Seat::firstOrCreate([
                         'screening_id' => $reservation->screening_id,
                         'row' => $seatInfo['row'],
                         'number' => $seatInfo['number'],

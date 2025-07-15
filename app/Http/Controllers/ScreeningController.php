@@ -57,6 +57,12 @@ class ScreeningController extends Controller
     }
     public function delete($id)
     {
+        $user = Auth::user();
+
+        if (!$user || $user->role !== 'admin') {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+        
         $screening = Screening::findOrFail($id);
         $screening->delete();
         return response()->json(['message' => 'Screening deleted successfully']);

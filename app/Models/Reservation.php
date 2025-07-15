@@ -32,7 +32,12 @@ class Reservation extends Model
     }
     public function seats()
     {
-        return $this->belongsToMany(Seat::class, 'reservation_seat', 'reservation_id', 'seat_id');
+        return $this->belongsToMany(Seat::class, 'reservation_seat', 'reservation_id', 'seat_id')->withTimestamps();
     }
-
+    public function reservationSeats()
+    {
+        return $this->hasMany(ReservationSeat::class, 'reservation_id');
+    }
 }
+
+

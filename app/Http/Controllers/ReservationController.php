@@ -77,7 +77,7 @@ class ReservationController extends Controller
             'reservation_time' => Carbon::now(),
             'status' => 'pending',
             'reservation_code' => $reservationCode,
-            'total_amount' => $totalAmount,  // <== poprawka tutaj
+            'total_amount' => $totalAmount,
             'selected_seats_json' => json_encode($selectedSeats),
         ]);
 
@@ -88,7 +88,7 @@ class ReservationController extends Controller
             ];
         }
 
-        $reservation->selected_seats_json = json_encode($seatData); // tymczasowe zapisanie miejsc
+        $reservation->selected_seats_json = json_encode($seatData);
         $reservation->save();
 
         $reservation->load('screening.movie', 'seats');
@@ -197,6 +197,19 @@ class ReservationController extends Controller
                 ];
             })->values();
         });
+
+        return response()->json($reservations);
+    }
+    public function getReservationSeatsWithMovie()
+    {
+        $reservations = Reservation::with([
+            'reservationSeats.seat',
+            'screening' => function ($q) {
+                $q->select('id', 'movie_id');
+            }
+        ])
+            ->where('status', 'confirmed')
+            ->get();
 
         return response()->json($reservations);
     }

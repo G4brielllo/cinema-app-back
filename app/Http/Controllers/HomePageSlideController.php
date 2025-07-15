@@ -31,6 +31,11 @@ class HomePageSlideController extends Controller
     }
     public function delete($id)
     {
+        $user = Auth::user();
+
+        if (!$user || $user->role !== 'admin') {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
         $slide = HomePageSlide::findOrFail($id);
         $slide->delete();
         return response()->json(['message' => 'Slide deleted successfully']);

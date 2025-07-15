@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Hall;
+use Illuminate\Support\Facades\Auth;
+
 
 class HallController extends Controller
 {
