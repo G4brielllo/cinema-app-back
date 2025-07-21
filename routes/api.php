@@ -37,27 +37,27 @@ Route::put('/api/users/{id}', [UserController::class, 'update'])->middleware('au
 
 Route::get('/api/movies', [MovieController::class, 'index']);
 Route::get('/api/movies/{id}', [MovieController::class, 'show']);
-Route::post('/api/movies', [MovieController::class, 'store'])->middleware('auth:sanctum');
-Route::put('/api/movies/{id}', [MovieController::class, 'update'])->middleware('auth:sanctum');
-Route::delete('/api/movies/{id}', [MovieController::class, 'delete'])->middleware('auth:sanctum');
+Route::post('/api/movies', [MovieController::class, 'store'])->middleware('auth:sanctum', 'is_admin');
+Route::put('/api/movies/{id}', [MovieController::class, 'update'])->middleware('auth:sanctum', 'is_admin');
+Route::delete('/api/movies/{id}', [MovieController::class, 'delete'])->middleware('auth:sanctum', 'is_admin');
 
 Route::get('/api/screenings', [ScreeningController::class, 'index']);
 Route::get('/api/screenings/{id}', [ScreeningController::class, 'show']);
-Route::post('/api/screenings', [ScreeningController::class, 'store'])->middleware('auth:sanctum');
-Route::put('/api/screenings/{id}', [ScreeningController::class, 'update'])->middleware('auth:sanctum');
-Route::delete('/api/screenings/{id}', [ScreeningController::class, 'delete'])->middleware('auth:sanctum');
+Route::post('/api/screenings', [ScreeningController::class, 'store'])->middleware('auth:sanctum', 'is_admin');
+Route::put('/api/screenings/{id}', [ScreeningController::class, 'update'])->middleware('auth:sanctum', 'is_admin');
+Route::delete('/api/screenings/{id}', [ScreeningController::class, 'delete'])->middleware('auth:sanctum', 'is_admin');
 
 Route::post('/api/reservations', [ReservationController::class, 'store'])->middleware('auth:sanctum');
 Route::get('/api/reservations', [ReservationController::class, 'index'])->middleware('auth:sanctum');
 Route::delete('/api/reservations/{id}', [ReservationController::class, 'delete'])->middleware('auth:sanctum');
-Route::get('/api/reservations/{code}', [ReservationController::class, 'showByCode']);
-Route::get('/api/reservations/{id}', [ReservationController::class, 'show']);
-Route::get('/api/reservations/user/{userId}', [ReservationController::class, 'checkUsersReservations']);
+Route::get('/api/reservations/{code}', [ReservationController::class, 'showByCode'])->middleware('auth:sanctum', 'is_admin');
+Route::get('/api/reservations/{id}', [ReservationController::class, 'show'])->middleware('auth:sanctum');
+Route::get('/api/reservations/user/{userId}', [ReservationController::class, 'checkUsersReservations'])->middleware('auth:sanctum');
 
 
 
-Route::get('/api/halls', [HallController::class, 'index']);
-Route::get('/api/halls/{id}', [HallController::class, 'show']);
+Route::get('/api/halls', [HallController::class, 'index'])->middleware('auth:sanctum');
+Route::get('/api/halls/{id}', [HallController::class, 'show'])->middleware('auth:sanctum');
 
 // Route::get('/screenings/{screeningId}/seats', [SeatController::class, 'getSeatsForScreening']);
 Route::get('/api/screenings/{screening}/seats', [SeatController::class, 'getSeatsForScreening']);
@@ -87,11 +87,14 @@ Route::get('/api/auto-archive-movies', function () {
 });
 
 Route::get('/api/slides', [HomePageSlideController::class, 'index']);
-Route::post('/api/slides', [HomePageSlideController::class, 'store'])->middleware('auth:sanctum');
+Route::post('/api/slides', [HomePageSlideController::class, 'store'])->middleware('auth:sanctum', 'is_admin');
+Route::delete('/api/slides/{id}', [HomePageSlideController::class, 'delete'])->middleware('auth:sanctum', 'is_admin');
+Route::put('/api/slides/{id}', [HomePageSlideController::class, 'update'])->middleware('auth:sanctum', 'is_admin');
 
 Route::get('/api/promotions', [PromotionController::class, 'index'])->middleware('auth:sanctum');
-Route::post('/api/promotions', [PromotionController::class, 'store'])->middleware('auth:sanctum');
-Route::delete('/api/promotions/{id}', [PromotionController::class, 'delete'])->middleware('auth:sanctum');
+Route::post('/api/promotions', [PromotionController::class, 'store'])->middleware('auth:sanctum', 'is_admin');
+Route::delete('/api/promotions/{id}', [PromotionController::class, 'delete'])->middleware('auth:sanctum', 'is_admin');
+Route::put('/api/promotions/{id}', [PromotionController::class, 'update'])->middleware('auth:sanctum', 'is_admin');
 
 
 

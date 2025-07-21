@@ -11,6 +11,5 @@ class HomePageSlide extends Model
         'title',
         'image_url',
         'trailer_url',
-        'position',
     ];
 }

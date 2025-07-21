@@ -24,7 +24,6 @@ class HomePageSlideController extends Controller
             'title' => 'required|string',
             'image_url' => 'required|string',
             'trailer_url' => 'required|string',
-            'position' => 'required|integer',
         ]);
         $slide = HomePageSlide::create($data);
         return response()->json($slide, 201);
@@ -39,5 +38,23 @@ class HomePageSlideController extends Controller
         $slide = HomePageSlide::findOrFail($id);
         $slide->delete();
         return response()->json(['message' => 'Slide deleted successfully']);
+    }
+    public function update($id)
+    {
+        $user = Auth::user();
+
+        if (!$user || $user->role !== 'admin') {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+
+        $data = request()->validate([
+            'title' => 'string',
+            'image_url' => 'string',
+            'trailer_url' => 'string',
+        ]);
+
+        $slide = HomePageSlide::findOrFail($id);
+        $slide->update($data);
+        return response()->json($slide);
     }
 }

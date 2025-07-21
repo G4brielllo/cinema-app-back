@@ -41,4 +41,22 @@ class PromotionController extends Controller
         $promotion->delete();
         return response()->json(['message' => 'Promotion deleted successfully']);
     }
+   public function update($id)
+    {
+        $user = Auth::user();
+
+        if (!$user || $user->role !== 'admin') {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+
+        $data = request()->validate([
+            'title' => 'string',
+            'description' => 'string',
+            'image' => 'string',
+        ]);
+
+        $promotion = Promotion::findOrFail($id);
+        $promotion->update($data);
+        return response()->json($promotion);
+    }
 }
