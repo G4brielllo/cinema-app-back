@@ -12,6 +12,7 @@ class Screening extends Model
         'screening_date',
         'screening_time',
         'hall_id',
+        'status',
     ];
 
     public function movie()

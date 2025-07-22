@@ -86,6 +86,11 @@ Route::get('/api/auto-archive-movies', function () {
     return response()->json(['status' => 'OK']);
 });
 
+Route::get('/api/auto-archive-screenings', function () {
+    Artisan::call('screenings:auto-archive-screenings');
+    return response()->json(['status' => 'OK']);
+});
+
 Route::get('/api/slides', [HomePageSlideController::class, 'index']);
 Route::post('/api/slides', [HomePageSlideController::class, 'store'])->middleware('auth:sanctum', 'is_admin');
 Route::delete('/api/slides/{id}', [HomePageSlideController::class, 'delete'])->middleware('auth:sanctum', 'is_admin');

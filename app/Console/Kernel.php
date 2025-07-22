@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Console\Commands\AutoArchiveScreenings;
 use App\Console\Commands\DeleteExpiredReservations;
 use App\Console\Commands\AutoArchiveMovies;
 use Illuminate\Console\Scheduling\Schedule;
@@ -18,6 +19,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         DeleteExpiredReservations::class,
         AutoArchiveMovies::class,
+        AutoArchiveScreenings::class,
     ];
 
     /**

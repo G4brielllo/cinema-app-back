@@ -42,12 +42,12 @@ class ScreeningController extends Controller
             'hall_id' => 'required|integer|nullable',
             'format' => 'required|string',
             'audio_type' => 'required|string',
+            'status'=> 'string',
         ]);
-
+        $data['status'] = $data['status'] ?? 'active';
         // Domyślnie hall_id = 1
         $data['hall_id'] = $data['hall_id'] ?? 1;
 
-        // Tworzenie seansu
         $screening = Screening::create($data);
 
         $hall = Hall::findOrFail($data['hall_id']);
@@ -62,7 +62,7 @@ class ScreeningController extends Controller
         if (!$user || $user->role !== 'admin') {
             return response()->json(['error' => 'Forbidden'], 403);
         }
-        
+
         $screening = Screening::findOrFail($id);
         $screening->delete();
         return response()->json(['message' => 'Screening deleted successfully']);
