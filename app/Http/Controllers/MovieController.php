@@ -48,6 +48,7 @@ class MovieController extends Controller
             'playing_from' => 'required|date',
             'playing_until' => 'required|date',
             'cast' => 'required|string',
+            'age_group' => 'required|string',
             'announcement' => 'boolean',
             'status' => 'string',
         ]);

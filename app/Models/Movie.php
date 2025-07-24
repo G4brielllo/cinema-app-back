@@ -19,6 +19,7 @@ class Movie extends Model
         'script',
         'release_date',
         'cast',
+        'age_group',
         'status',
     ];
     protected $attributes = [
