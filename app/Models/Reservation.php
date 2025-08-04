@@ -32,7 +32,9 @@ class Reservation extends Model
     }
     public function seats()
     {
-        return $this->belongsToMany(Seat::class, 'reservation_seat', 'reservation_id', 'seat_id')->withTimestamps();
+        return $this->belongsToMany(HallSeat::class, 'reservation_seat', 'reservation_id', 'hall_seat_id')
+            ->withPivot('screening_id')
+            ->withTimestamps();
     }
     public function reservationSeats()
     {

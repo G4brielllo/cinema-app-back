@@ -10,12 +10,6 @@ use App\Models\Hall;
 
 class ScreeningController extends Controller
 {
-    // public function index()
-    // {
-    //     $movies = Movie::all();
-    //     return response()->json($movies);
-    // }
-
     public function index()
     {
         $screenings = Screening::with('movie')->get();
@@ -42,10 +36,9 @@ class ScreeningController extends Controller
             'hall_id' => 'required|integer|nullable',
             'format' => 'required|string',
             'audio_type' => 'required|string',
-            'status'=> 'string',
+            'status' => 'string',
         ]);
         $data['status'] = $data['status'] ?? 'active';
-        // Domyślnie hall_id = 1
         $data['hall_id'] = $data['hall_id'] ?? 1;
 
         $screening = Screening::create($data);
@@ -88,4 +81,25 @@ class ScreeningController extends Controller
         $screening->update($data);
         return response()->json($screening);
     }
+    public function seats($id)
+    {
+        $screening = Screening::with('hall.hallSeats')->findOrFail($id);
+
+        $bookedSeatIds = ReservationSeat::whereHas('reservation', function ($q) use ($id) {
+            $q->where('screening_id', $id)
+                ->whereIn('status', ['confirmed', 'pending']);
+        })->pluck('hall_seat_id');
+
+        $availableSeats = $screening->hall->hallSeats->map(function ($seat) use ($bookedSeatIds) {
+            return [
+                'id' => $seat->id,
+                'row' => $seat->row,
+                'number' => $seat->number,
+                'is_booked' => $bookedSeatIds->contains($seat->id),
+            ];
+        });
+
+        return response()->json($availableSeats);
+    }
+
 }

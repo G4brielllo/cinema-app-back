@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Services\PayUService;
 use Illuminate\Support\Facades\DB;
+use App\Models\ReservationSeat;
 
 
 
@@ -48,28 +49,30 @@ class ReservationController extends Controller
         $request->validate([
             'screening_id' => 'required|integer',
             'seats' => 'required|array',
-            'seats.*.row' => 'required|integer',
-            'seats.*.number' => 'required|integer',
+            'seats.*.hall_seat_id' => 'required|integer|exists:hall_seats,id',
         ]);
 
         $reservationCode = $this->generateUniqueReservationCode();
         $screeningId = $request->input('screening_id');
         $selectedSeats = $request->input('seats');
+        \Log::info('Przekazane miejsca:', $selectedSeats);
+
         $userId = Auth::id();
 
         $totalAmount = $this->calculateTotalAmount($selectedSeats, Screening::find($screeningId));
+        foreach ($selectedSeats as $seat) {
+            $exists = ReservationSeat::where('hall_seat_id', $seat['hall_seat_id'])
+                ->whereHas('reservation', function ($q) use ($screeningId) {
+                    $q->where('screening_id', $screeningId)
+                        ->whereIn('status', ['confirmed', 'pending']);
+                })->exists();
 
-        foreach ($selectedSeats as $seatInfo) {
-            $existing = Seat::where('screening_id', $screeningId)
-                ->where('row', $seatInfo['row'])
-                ->where('number', $seatInfo['number'])
-                ->where('is_booked', true)
-                ->first();
-
-            if ($existing) {
-                return response()->json(['message' => 'Wybrane miejsce jest już zarezerwowane'], 400);
+            if ($exists) {
+                return response()->json(['message' => 'Miejsce jest już zarezerwowane'], 400);
             }
         }
+
+
 
         $reservation = Reservation::create([
             'user_id' => $userId,
@@ -81,6 +84,13 @@ class ReservationController extends Controller
             'selected_seats_json' => json_encode($selectedSeats),
         ]);
 
+        foreach ($selectedSeats as $seat) {
+            ReservationSeat::create([
+                'reservation_id' => $reservation->id,
+                'hall_seat_id' => $seat['hall_seat_id'],
+                'screening_id' => $screeningId,
+            ]);
+        }
         foreach ($selectedSeats as $seatInfo) {
             $seatData[] = [
                 'row' => $seatInfo['row'],
@@ -212,6 +222,17 @@ class ReservationController extends Controller
             ->get();
 
         return response()->json($reservations);
+    }
+
+    public function getBookedSeats($screeningId)
+    {
+        $bookedSeats = ReservationSeat::where('screening_id', $screeningId)
+            ->whereHas('reservation', function ($q) {
+                $q->whereIn('status', ['pending', 'confirmed']);
+            })
+            ->pluck('hall_seat_id');
+
+        return response()->json($bookedSeats);
     }
 
 }

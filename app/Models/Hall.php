@@ -11,9 +11,10 @@ class Hall extends Model
         'rows',
         'seats_per_row',
     ];
-    public function seats()
+
+    public function hallSeats()
     {
-        return $this->hasMany(Seat::class);
+        return $this->hasMany(HallSeat::class);
     }
 
     public function screenings()

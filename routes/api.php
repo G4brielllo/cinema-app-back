@@ -13,6 +13,7 @@ use App\Http\Controllers\PayUController;
 use App\Http\Controllers\HomePageSlideController;
 use App\Http\Controllers\PromotionController;
 use Illuminate\Support\Facades\Artisan;
+use App\Http\Controllers\HallSeatController;
 
 
 
@@ -55,10 +56,22 @@ Route::get('/api/reservations/{code}', [ReservationController::class, 'showByCod
 Route::get('/api/reservations/{id}', [ReservationController::class, 'show'])->middleware('auth:sanctum');
 Route::get('/api/reservations/user/{userId}', [ReservationController::class, 'checkUsersReservations'])->middleware('auth:sanctum');
 
+Route::get('/api/reservation-by-code/{code}', [ReservationController::class, 'showByCode']);
+Route::get('/api/reservations-with-movie', [ReservationController::class, 'getReservationSeatsWithMovie']);
+
 
 
 Route::get('/api/halls', [HallController::class, 'index'])->middleware('auth:sanctum');
 Route::get('/api/halls/{id}', [HallController::class, 'show'])->middleware('auth:sanctum');
+
+
+Route::post('/api/halls', [HallController::class, 'store'])->middleware('auth:sanctum');
+Route::post('/api/halls/{hall}/layout', [HallController::class, 'storeLayout'])->middleware('auth:sanctum');
+// Route::post('/api/halls/{hall}/layout', [HallController::class, 'storeLayout']);
+
+Route::get('/api/hall-seats/{hall}', [HallSeatController::class, 'getSeatsByHall']);
+Route::get('/api/halls/{hallId}/available-seats', [HallSeatController::class, 'getAvailableSeats']);
+
 
 // Route::get('/screenings/{screeningId}/seats', [SeatController::class, 'getSeatsForScreening']);
 Route::get('/api/screenings/{screening}/seats', [SeatController::class, 'getSeatsForScreening']);
@@ -105,3 +118,4 @@ Route::put('/api/promotions/{id}', [PromotionController::class, 'update'])->midd
 
 
 Route::get('/api/reservations_seat_detailed', [ReservationController::class, 'getReservationSeatsWithMovie'])->middleware('auth:sanctum');
+Route::get('/api/reservations/{id}/booked-seats', [ReservationController::class, 'getBookedSeats']);

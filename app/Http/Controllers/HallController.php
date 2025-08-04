@@ -26,21 +26,55 @@ class HallController extends Controller
 
     }
 
-    public function store()
+    public function store(Request $request)
     {
-        $user = Auth::user();
-
-        if (!$user || $user->role !== 'admin') {
-            return response()->json(['error' => 'Forbidden'], 403);
-        }
-
-        $data = request()->validate([
+        $validated = $request->validate([
             'name' => 'required|string',
-            'rows' => 'required|integer',
-            'seats_per_row' => 'required|integer',
+            'rows' => 'required|integer|min:1',
+            'seats_per_row' => 'required|integer|min:1',
         ]);
 
-        $hall = Hall::create($data);
+        $hall = Hall::create($validated);
         return response()->json($hall, 201);
     }
+    public function storeLayout(Request $request, Hall $hall)
+    {
+        $request->validate([
+            'seats' => 'required|array',
+            'seats.*.x' => 'required|integer|min:1',
+            'seats.*.y' => 'required|integer|min:1',
+        ]);
+
+        $hall->hallSeats()->delete();
+
+        foreach ($request->input('seats') as $seat) {
+            $hall->hallSeats()->create([
+                'x' => $seat['x'],
+                'y' => $seat['y'],
+            ]);
+        }
+
+        return response()->json(['message' => 'Układ zapisany']);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $hall = Hall::findOrFail($id);
+        $validated = $request->validate([
+            'name' => 'sometimes|string',
+            'rows' => 'sometimes|integer|min:1',
+            'seats_per_row' => 'sometimes|integer|min:1',
+        ]);
+
+        $hall->update($validated);
+        return response()->json($hall);
+    }
+
+    public function delete($id)
+    {
+        $hall = Hall::findOrFail($id);
+        $hall->delete();
+        return response()->json(null, 204);
+    }
+
 }

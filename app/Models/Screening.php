@@ -19,5 +19,14 @@ class Screening extends Model
     {
         return $this->belongsTo(Movie::class);
     }
+     public function hall()
+    {
+        return $this->belongsTo(Hall::class);
+    }
+
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class);
+    }
 
 }
