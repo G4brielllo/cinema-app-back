@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Reservation;
-use App\Models\Seat;
 use App\Models\Screening;
 use App\Models\Hall;
 use Illuminate\Support\Facades\Auth;
@@ -134,7 +133,7 @@ class ReservationController extends Controller
                 \Log::info('PayU refund response:', $refundResponse);
             }
 
-            $reservation->seats()->update(['is_booked' => false]);
+            // $reservation->seats()->update(['is_booked' => false]);
             $reservation->seats()->detach();
 
             $reservation->update(['status' => 'refunded']);
@@ -183,7 +182,7 @@ class ReservationController extends Controller
     }
     public function show($id)
     {
-        $reservation = Reservation::with(['user', 'screening.movie', 'seat'])->find($id);
+        $reservation = Reservation::with(['user', 'screening.movie', 'seats'])->find($id);
 
         if (!$reservation) {
             return response()->json(['error' => 'Reservation not found'], 404);
@@ -202,14 +201,15 @@ class ReservationController extends Controller
             $reservation->selected_seats_json = $reservation->seats->map(function ($seat) {
                 return [
                     'seat_id' => $seat->id,
-                    'row' => $seat->row,
-                    'number' => $seat->number,
+                    'x' => $seat->x,
+                    'y' => $seat->y,
                 ];
             })->values();
         });
 
         return response()->json($reservations);
     }
+
     public function getReservationSeatsWithMovie()
     {
         $reservations = Reservation::with([

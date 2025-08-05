@@ -131,7 +131,10 @@ class PayUController extends Controller
                 $updateData['payu_order_id'] = $payuOrderId;
             }
 
-            $reservation->update($updateData);
+            if (!in_array($reservation->status, ['refunded', 'canceled'])) {
+                $reservation->update($updateData);
+            }
+
 
             if ($reservation->seats) {
                 $reservation->seats()->update([

@@ -67,10 +67,13 @@ Route::get('/api/halls/{id}', [HallController::class, 'show'])->middleware('auth
 
 Route::post('/api/halls', [HallController::class, 'store'])->middleware('auth:sanctum');
 Route::post('/api/halls/{hall}/layout', [HallController::class, 'storeLayout'])->middleware('auth:sanctum');
+Route::get('/api/halls/{hall}/layout', [HallSeatController::class, 'getSeatsByHall'])->middleware('auth:sanctum');
 // Route::post('/api/halls/{hall}/layout', [HallController::class, 'storeLayout']);
 
 Route::get('/api/hall-seats/{hall}', [HallSeatController::class, 'getSeatsByHall']);
 Route::get('/api/halls/{hallId}/available-seats', [HallSeatController::class, 'getAvailableSeats']);
+Route::put('/api/halls/{hallId}', [HallController::class, 'update']);
+Route::delete('/api/halls/{hallId}', [HallController::class, 'delete']);
 
 
 // Route::get('/screenings/{screeningId}/seats', [SeatController::class, 'getSeatsForScreening']);

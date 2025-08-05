@@ -17,6 +17,10 @@ class Reservation extends Model
         'selected_seats_json',
     ];
 
+    protected $casts = [
+        'selected_seats_json' => 'array',
+    ];
+
     public function screening()
     {
         return $this->belongsTo(Screening::class);
@@ -26,10 +30,10 @@ class Reservation extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function seat()
-    {
-        return $this->belongsTo(Seat::class);
-    }
+    // public function seat()
+    // {
+    //     return $this->belongsTo(Seat::class);
+    // }
     public function seats()
     {
         return $this->belongsToMany(HallSeat::class, 'reservation_seat', 'reservation_id', 'hall_seat_id')

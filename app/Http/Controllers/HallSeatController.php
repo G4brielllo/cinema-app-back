@@ -9,11 +9,20 @@ use App\Models\HallSeat;
 
 class HallSeatController extends Controller
 {
+    // public function getSeatsByHall($hallId)
+    // {
+    //     $hall = Hall::findOrFail($hallId);
+    //     return response()->json($hall->hallSeats);
+    // }
     public function getSeatsByHall($hallId)
     {
         $hall = Hall::findOrFail($hallId);
-        return response()->json($hall->hallSeats);
+
+        $hallSeats = HallSeat::where('hall_id', $hallId)->get(['id', 'x', 'y']);
+
+        return response()->json($hallSeats);
     }
+
     public function getAvailableSeats($hallId)
     {
         $hall = Hall::findOrFail($hallId);

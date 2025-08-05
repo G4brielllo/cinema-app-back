@@ -21,7 +21,6 @@ class PayUService
         ]);
     }
 
-    // Pobieranie tokenu OAuth2, wazny' 1h
     protected function getAccessToken()
     {
         return Cache::remember('payu_access_token', 3600, function () {
