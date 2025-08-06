@@ -213,10 +213,8 @@ class ReservationController extends Controller
     public function getReservationSeatsWithMovie()
     {
         $reservations = Reservation::with([
-            'reservationSeats.seat',
-            'screening' => function ($q) {
-                $q->select('id', 'movie_id');
-            }
+            'reservationSeats.hallSeat',
+            'screening.movie'
         ])
             ->where('status', 'confirmed')
             ->get();
