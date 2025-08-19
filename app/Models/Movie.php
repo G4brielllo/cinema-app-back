@@ -17,7 +17,6 @@ class Movie extends Model
         'trailer',
         'direction',
         'script',
-        'release_date',
         'cast',
         'age_group',
         'status',

@@ -44,7 +44,6 @@ class MovieController extends Controller
             'trailer' => 'nullable|string',
             'direction' => 'required|string',
             'script' => 'required|string',
-            'release_date' => 'required|date',
             'playing_from' => 'required|date',
             'playing_until' => 'required|date',
             'cast' => 'required|string',
@@ -93,6 +92,7 @@ class MovieController extends Controller
             'playing_until' => 'date',
             'cast' => 'string',
             'status' => 'string',
+            'age_group' => 'sometimes|string|in:Dzieci,Młodzież,Dorośli',        
         ]);
 
         $movie = Movie::findOrFail($id);
