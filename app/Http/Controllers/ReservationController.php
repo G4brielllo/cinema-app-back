@@ -107,6 +107,8 @@ class ReservationController extends Controller
             'reservation_code' => $reservationCode,
             'reserved_seats' => $reservedSeatIds,
         ]);
+        Log::info('PayU response:', [$response]);
+
     }
     public function delete($id)
     {

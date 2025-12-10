@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Models\Seat;
 
 
+
 class PayUController extends Controller
 {
     protected $payu;
@@ -125,41 +126,53 @@ class PayUController extends Controller
         }
 
         foreach ($reservations as $reservation) {
-            $updateData = ['status' => $this->mapStatus($status)];
+            $previousStatus = $reservation->status;
+            $newStatus = $this->mapStatus($status);
 
-            if ($status === 'COMPLETED') {
+            if ($previousStatus === 'confirmed' && $newStatus === 'pending') {
+                \Log::info("Ignoring regressive status update for reservation {$reservation->id}: confirmed -> pending");
+                continue;
+            }
+
+            $updateData = [];
+            if ($newStatus !== $previousStatus) {
+                $updateData['status'] = $newStatus;
+            }
+
+            if ($status === 'COMPLETED' && empty($reservation->payu_order_id)) {
                 $updateData['payu_order_id'] = $payuOrderId;
             }
 
-            if (!in_array($reservation->status, ['refunded', 'canceled'])) {
+            if (!empty($updateData) && !in_array($previousStatus, ['refunded', 'canceled'])) {
                 $reservation->update($updateData);
             }
 
-
-            if ($reservation->seats) {
-                $reservation->seats()->update([
-                    'is_booked' => $status === 'COMPLETED'
-                ]);
-            }
-
-            if ($updateData['status'] === 'confirmed') {
-                $seatData = json_decode($reservation->selected_seats_json, true);
-
+            if ($newStatus === 'confirmed' && $previousStatus !== 'confirmed') {
+                $seatData = json_decode($reservation->selected_seats_json, true) ?: [];
                 foreach ($seatData as $seatInfo) {
-                    $seat = Seat::firstOrCreate([
-                        'screening_id' => $reservation->screening_id,
-                        'row' => $seatInfo['row'],
-                        'number' => $seatInfo['number'],
-                        'is_booked' => true,
-                    ]);
-
-                    $reservation->seats()->attach($seat->id);
+                    $seat = Seat::firstOrCreate(
+                        [
+                            'screening_id' => $reservation->screening_id,
+                            'row' => $seatInfo['row'],
+                            'number' => $seatInfo['number'],
+                        ],
+                        ['is_booked' => true]
+                    );
+                    if (! $reservation->seats()->where('seats.id', $seat->id)->exists()) {
+                        $reservation->seats()->attach($seat->id);
+                    } else {
+                        $seat->update(['is_booked' => true]);
+                    }
                 }
-
                 Mail::to($reservation->user->email)->send(new \App\Mail\ReservationConfirmation($reservation));
             }
 
-        }
+            if (in_array($newStatus, ['canceled', 'refunded']) && $previousStatus === 'confirmed') {
+                if ($reservation->seats()->count()) {
+                    $reservation->seats()->update(['is_booked' => false]);
+                }
+            }
+         }
 
         return response()->json(['message' => 'OK']);
     }

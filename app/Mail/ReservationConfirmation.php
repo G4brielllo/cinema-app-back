@@ -13,7 +13,7 @@ class ReservationConfirmation extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $reservation;  // zamiast tylko kodu - całe dane rezerwacji
+    public $reservation;
 
     /**
      * Create a new message instance.
